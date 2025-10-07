@@ -1,0 +1,41 @@
+spring.application.name: demo
+spring:
+  ai:
+    openai:
+      api-key: ${API_KEY}
+    vectorstore:
+      qdrant:
+        initialize-schema: true
+        host: localhost
+        port: 6334
+        collection-name: ai-course
+  docker:
+    compose:
+      stop:
+        command: down
+logging:
+  level:
+    org:
+      springframework:
+        ai:
+          chat:
+            client:
+              advisor: DEBUG
+
+spring.datasource.url: jdbc:mysql://localhost:3306/spring_ai_course
+spring.datasource.username: ioaxaca
+spring.datasource.password: ioaxaca-developer
+spring.datasource.driver-class-name: com.mysql.cj.jdbc.Driver
+spring.jpa.database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+spring.jpa.show-sql: true
+spring.jpa.properties.hibernate.format_sql: true
+
+
+# ------------------------------------
+# 2. Spring AI JDBC Memory Configuration
+# ------------------------------------
+# This property tells Spring AI to create the chat memory table
+# (default is 'embedded', which only runs for in-memory databases like H2/HSQLDB).
+# Set to 'always' to ensure the 'AI_CHAT_MEMORY' table is created if it doesn't exist.
+spring.ai.chat.memory.repository.jdbc.initialize-schema: always
+
