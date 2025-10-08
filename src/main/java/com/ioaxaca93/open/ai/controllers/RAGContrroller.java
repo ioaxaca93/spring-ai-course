@@ -29,16 +29,29 @@ public class RAGContrroller {
     private VectorStore vectorStore;
     @Value("classpath:/prompts/system-rag-data.st")
     Resource promptSystemTemplate;
+    @Value("classpath:/prompts/system-message-hr.st")
+    Resource promptSystemHrTemplate;
 
 
     @GetMapping("/chat")
     public String test(@RequestHeader("username")String username, @RequestParam("message") final String message) {
-        SearchRequest searchRequest = SearchRequest.builder().query(message).topK(30).similarityThreshold(0.5).build();
-        List<Document> documents = vectorStore.similaritySearch(searchRequest);
-        String docs = documents.stream().map(Document::getText).collect(Collectors.joining(System.lineSeparator()));
+        //SearchRequest searchRequest = SearchRequest.builder().query(message).topK(30).similarityThreshold(0.5).build();
+        //List<Document> documents = vectorStore.similaritySearch(searchRequest);
+        //String docs = documents.stream().map(Document::getText).collect(Collectors.joining(System.lineSeparator()));
         return chatClient.prompt().
                 user(message)
-                .system(e->e.text(promptSystemTemplate).param("documents",docs))
+                //.system(e->e.text(promptSystemTemplate).param("documents",docs))
+                .advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, username)).call().content();
+    }
+
+    @GetMapping("/chat-hr")
+    public String testHr(@RequestHeader("username")String username, @RequestParam("message") final String message) {
+        //SearchRequest searchRequest = SearchRequest.builder().query(message).topK(3).similarityThreshold(0.5).build();
+        //List<Document> documents = vectorStore.similaritySearch(searchRequest);
+        //String docs = documents.stream().map(Document::getText).collect(Collectors.joining(System.lineSeparator()));
+        return chatClient.prompt().
+                user(message)
+          //      .system(e->e.text(promptSystemHrTemplate).param("documents",docs))
                 .advisors(advisorSpec -> advisorSpec.param(CONVERSATION_ID, username)).call().content();
     }
 }

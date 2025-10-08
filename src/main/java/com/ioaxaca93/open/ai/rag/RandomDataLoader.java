@@ -2,7 +2,12 @@ package com.ioaxaca93.open.ai.rag;
 
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
+import org.springframework.ai.reader.tika.TikaDocumentReader;
+import org.springframework.ai.transformer.splitter.TextSplitter;
+import org.springframework.ai.transformer.splitter.TokenTextSplitter;
 import org.springframework.ai.vectorstore.VectorStore;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -14,9 +19,24 @@ import org.springframework.ai.document.Document;
 @Component
 @RequiredArgsConstructor
 public class RandomDataLoader {
+
     private final VectorStore vectorStore;
+    @Value("classpath:HR_Policies.pdf")
+    private Resource policyFile;
+
 
     @PostConstruct
+    public void init(){
+        //loadPdf();
+    }
+
+    public void loadPdf() {
+        TikaDocumentReader documentReader = new TikaDocumentReader(policyFile);
+        List<Document> documents = documentReader.read();
+        TokenTextSplitter tokenTextSplitter = TokenTextSplitter.builder().withChunkSize(100).withMaxNumChunks(400).build();
+        vectorStore.add(tokenTextSplitter.split(documents));
+    }
+
     public void loadSentencesIntoVectorStore() {
         List<String> sentences = List.of(
                 "Java is used for building scalable enterprise applications.",

@@ -8,6 +8,9 @@ import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.ChatMemoryRepository;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
+import org.springframework.ai.rag.advisor.RetrievalAugmentationAdvisor;
+import org.springframework.ai.rag.retrieval.search.VectorStoreDocumentRetriever;
+import org.springframework.ai.vectorstore.VectorStore;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -30,9 +33,16 @@ public class ChatClientConfig {
     }
 
     @Bean("chatClientMemory")
-    public ChatClient chatClientMemory(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory) {
+    public ChatClient chatClientMemory(ChatClient.Builder chatClientBuilder, ChatMemory chatMemory,VectorStore vectorStore) {
         MessageChatMemoryAdvisor build = MessageChatMemoryAdvisor.builder(chatMemory).build();
         return chatClientBuilder
-                .defaultAdvisors(build, new SimpleLoggerAdvisor()).build();
+                .defaultAdvisors(build, new SimpleLoggerAdvisor(), retrievalAugmentationAdvisor(vectorStore)).build();
+    }
+
+    public RetrievalAugmentationAdvisor retrievalAugmentationAdvisor(VectorStore vectorStore) {
+       return RetrievalAugmentationAdvisor.builder().documentRetriever(
+                VectorStoreDocumentRetriever.builder().vectorStore(vectorStore)
+                        .topK(3).similarityThreshold(0.5).build()
+        ).build();
     }
 }
